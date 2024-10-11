@@ -1,0 +1,3 @@
+add_executable(unix_domain_client unix_domain_client.c)
+add_executable(unix_domain_server unix_domain_server.c)
+add_executable(unix_domain_bench unix_domain_bench.c)
