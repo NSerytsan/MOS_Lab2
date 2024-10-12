@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     }
 
     lseek(fd, args.msg_size + 1, SEEK_SET);
-    
+
     if (write(fd, "", 1) < 1)
     {
         sys_error("Error writing to file");
@@ -38,10 +38,15 @@ int main(int argc, char **argv)
     void *msg_buffer = malloc(args.msg_size);
     atomic_char *guard = (atomic_char *)addr;
 
+    bench_results results;
+    init_benchmakr(&results);
+
     while (atomic_load(guard) != 's')
         ;
     for (int msg = 0; msg < args.msg_count; ++msg)
     {
+        results.iteration_start = now();
+
         memset(addr, '#', args.msg_size);
 
         atomic_store(guard, 'c');
@@ -49,8 +54,11 @@ int main(int argc, char **argv)
             ;
 
         memcpy(msg_buffer, addr, args.msg_size);
+
+        benchmark(&results);
     }
 
+    evaluate_benchmark(&results, &args);
     free(msg_buffer);
 
     if (munmap(addr, args.msg_size) < 0)
