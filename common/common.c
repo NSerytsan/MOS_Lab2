@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdint.h>
 #include <math.h>
+#include <signal.h>
 
 #include "common.h"
 
@@ -105,4 +106,79 @@ void evaluate_benchmark(bench_results *bench, bench_args *args)
     printf("Maximum duration:   %.3f\tus\n", bench->max_time / 1000.0);
     printf("Standard deviation: %.3f\tus\n", sigma / 1000.0);
     printf("Message rate:       %d\tmsg/s\n", message_rate);
+}
+
+void sig_handler(int signal)
+{
+}
+
+void setup_ignored_signals(struct sigaction *signal_action, int flags)
+{
+    signal_action->sa_handler = sig_handler;
+
+    if (!(flags & BLOCK_USR1))
+    {
+        if (sigaction(SIGUSR1, signal_action, NULL))
+        {
+            sys_error("Error registering SIGUSR1 signal handler for server");
+        }
+    }
+
+    if (!(flags & BLOCK_USR2))
+    {
+        if (sigaction(SIGUSR2, signal_action, NULL))
+        {
+            sys_error("Error registering SIGUSR2 signal handler for server");
+        }
+    }
+}
+
+void setup_blocked_signals(struct sigaction *signal_action, int flags)
+{
+    signal_action->sa_handler = SIG_DFL;
+
+    if (flags & BLOCK_USR1)
+    {
+        sigaddset(&signal_action->sa_mask, SIGUSR1);
+    }
+
+    if (flags & BLOCK_USR2)
+    {
+        sigaddset(&signal_action->sa_mask, SIGUSR2);
+    }
+
+    sigprocmask(SIG_BLOCK, &signal_action->sa_mask, NULL);
+}
+
+void setup_signals(struct sigaction *signal_action, int flags)
+{
+    signal_action->sa_flags = SA_RESTART;
+
+    sigemptyset(&signal_action->sa_mask);
+    setup_ignored_signals(signal_action, flags);
+
+    sigemptyset(&signal_action->sa_mask);
+    setup_blocked_signals(signal_action, flags);
+}
+
+void setup_client_signals(struct sigaction *signal_action)
+{
+    setup_signals(signal_action, IGNORE_USR1 | BLOCK_USR2);
+    // usleep(1000);
+}
+
+void wait_for_signal(struct sigaction *signal_action)
+{
+    int signal_number;
+    sigwait(&(signal_action->sa_mask), &signal_number);
+}
+
+void notify_server()
+{
+    kill(0, SIGUSR1);
+}
+
+void notify_client()
+{
+    kill(0, SIGUSR2);
 }
