@@ -25,7 +25,7 @@ int main(int argc, char **argv)
         sys_error("Error mapping file");
     }
 
-    // Comunication with sever
+    // Communication with sever
     void *msg_buffer = malloc(args.msg_size);
     
     atomic_char *guard = (atomic_char *)addr;

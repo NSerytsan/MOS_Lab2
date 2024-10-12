@@ -9,6 +9,11 @@
 
 #include "common.h"
 
+#define IGNORE_USR1 0x0
+#define IGNORE_USR2 0x0
+#define BLOCK_USR1 0x1
+#define BLOCK_USR2 0x2
+
 // Input args routines
 void usage(const char *prog_name)
 {
@@ -108,6 +113,7 @@ void evaluate_benchmark(bench_results *bench, bench_args *args)
     printf("Message rate:       %d\tmsg/s\n", message_rate);
 }
 
+// Signals routines
 void sig_handler(int signal)
 {
 }
@@ -164,7 +170,13 @@ void setup_signals(struct sigaction *signal_action, int flags)
 void setup_client_signals(struct sigaction *signal_action)
 {
     setup_signals(signal_action, IGNORE_USR1 | BLOCK_USR2);
-    // usleep(1000);
+    sleep(1);
+}
+
+void setup_server_signals(struct sigaction *signal_action)
+{
+    setup_signals(signal_action, BLOCK_USR1 | IGNORE_USR2);
+    sleep(1);
 }
 
 void wait_for_signal(struct sigaction *signal_action)

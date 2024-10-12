@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
     notify_server();
 
-    for (; args.msg_count > 0; --args.msg_count)
+    for (; args.msg_count > 0; args.msg_count--)
     {
         wait_for_signal(&sig_action);
 
