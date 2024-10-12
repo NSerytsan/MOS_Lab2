@@ -36,5 +36,10 @@ void setup_server_signals(struct sigaction *signal_action);
 void wait_for_signal(struct sigaction *signal_action);
 void notify_server();
 void notify_client();
+void setup_parent_signals();
+
+void exec_server_client(char *server_path, char *client_path, bench_args *args);
+void setup_benchmark_process(int argc, char **argv);
+
 
 #endif

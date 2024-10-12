@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "common.h"
 
@@ -17,7 +18,7 @@
 // Input args routines
 void usage(const char *prog_name)
 {
-    fprintf(stderr, "Usage: %s -s <message size> -c <message count>\n", prog_name);
+    fprintf(stderr, "Usage: <server> <client> -s <message size> -c <message count>\n");
     exit(EXIT_FAILURE);
 }
 
@@ -27,24 +28,20 @@ void get_bench_args(bench_args *args, int argc, char **argv)
         return;
     int opt = 0;
 
-    args->msg_count = 0;
-    args->msg_size = 0;
-    while (((opt = getopt(argc, argv, "hc:s:"))))
+    args->msg_count = 1000;
+    args->msg_size = 4096;
+    while ((opt = getopt(argc, argv, "c:s:")) != -1)
     {
         switch (opt)
         {
-        case -1:
-            return;
         case 'c':
             args->msg_count = atoi(optarg);
             break;
         case 's':
             args->msg_size = atoi(optarg);
             break;
-        case 'h':
         default:
-            usage(argv[0]);
-            break;
+            continue;
         }
     }
 }
@@ -134,7 +131,7 @@ void setup_ignored_signals(struct sigaction *signal_action, int flags)
     {
         if (sigaction(SIGUSR2, signal_action, NULL))
         {
-            sys_error("Error registering SIGUSR2 signal handler for server");
+            sys_error("Error registering SIGUSR2 signal handler for client");
         }
     }
 }
@@ -170,13 +167,13 @@ void setup_signals(struct sigaction *signal_action, int flags)
 void setup_client_signals(struct sigaction *signal_action)
 {
     setup_signals(signal_action, IGNORE_USR1 | BLOCK_USR2);
-    sleep(1);
+    usleep(1000);
 }
 
 void setup_server_signals(struct sigaction *signal_action)
 {
     setup_signals(signal_action, BLOCK_USR1 | IGNORE_USR2);
-    sleep(1);
+    usleep(1000);
 }
 
 void wait_for_signal(struct sigaction *signal_action)
@@ -193,4 +190,57 @@ void notify_server()
 void notify_client()
 {
     kill(0, SIGUSR2);
+}
+
+void setup_parent_signals()
+{
+    struct sigaction sig_action;
+    setup_signals(&sig_action, IGNORE_USR1 | IGNORE_USR2);
+}
+
+// Process routines
+pid_t exec_process(char *path, bench_args *args)
+{
+    const static size_t buff_sz = 256;
+    char opt_c_buffer[buff_sz];
+    snprintf(opt_c_buffer, buff_sz, "-c %ld", args->msg_count);
+    char opt_s_buffer[buff_sz];
+    snprintf(opt_s_buffer, buff_sz, "-s %ld", args->msg_count);
+
+    char *argv[4] = {path};
+    argv[1] = opt_c_buffer;
+    argv[2] = opt_s_buffer;
+    argv[3] = NULL;
+
+    const pid_t parent_pid = getpid();
+    const pid_t pid = fork();
+
+    if (pid == 0)
+    {
+        setpgid(pid, parent_pid);
+
+        if (execv(argv[0], argv) == -1)
+        {
+            sys_error("Error opening child process");
+        }
+    }
+
+    return pid;
+}
+
+void exec_server_client(char *server_path, char *client_path, bench_args *args)
+{
+    pid_t server_pid = exec_process(server_path, args);
+    pid_t client_pid = exec_process(client_path, args);
+
+    waitpid(server_pid, NULL, WUNTRACED);
+    waitpid(client_pid, NULL, WUNTRACED);
+}
+
+void setup_benchmark_process(int argc, char **argv)
+{
+    bench_args args;
+    get_bench_args(&args, argc, argv);
+    setup_parent_signals();
+    exec_server_client(argv[1], argv[2], &args);
 }
