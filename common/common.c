@@ -205,7 +205,7 @@ pid_t exec_process(char *path, bench_args *args)
     char opt_c_buffer[buff_sz];
     snprintf(opt_c_buffer, buff_sz, "-c %ld", args->msg_count);
     char opt_s_buffer[buff_sz];
-    snprintf(opt_s_buffer, buff_sz, "-s %ld", args->msg_count);
+    snprintf(opt_s_buffer, buff_sz, "-s %ld", args->msg_size);
 
     char *argv[4] = {path};
     argv[1] = opt_c_buffer;
@@ -228,19 +228,17 @@ pid_t exec_process(char *path, bench_args *args)
     return pid;
 }
 
-void exec_server_client(char *server_path, char *client_path, bench_args *args)
-{
-    pid_t server_pid = exec_process(server_path, args);
-    pid_t client_pid = exec_process(client_path, args);
-
-    waitpid(server_pid, NULL, WUNTRACED);
-    waitpid(client_pid, NULL, WUNTRACED);
-}
-
 void setup_benchmark_process(int argc, char **argv)
 {
+    char *server_path = {argv[1]};
+    char *client_path = {argv[2]};
     bench_args args;
     get_bench_args(&args, argc, argv);
     setup_parent_signals();
-    exec_server_client(argv[1], argv[2], &args);
+
+    pid_t server_pid = exec_process(server_path, &args);
+    pid_t client_pid = exec_process(client_path, &args);
+
+    waitpid(server_pid, NULL, WUNTRACED);
+    waitpid(client_pid, NULL, WUNTRACED);
 }
