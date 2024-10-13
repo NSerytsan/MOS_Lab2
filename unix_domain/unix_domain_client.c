@@ -26,8 +26,7 @@ int main(int argc, char **argv)
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, UNIX_DOMAIN_BENCH_FILE);
 
-    int connection = connect(sock_fd, (struct sockaddr *)&addr, SUN_LEN(&addr));
-    if (connection == -1)
+    if (connect(sock_fd, (struct sockaddr *)&addr, SUN_LEN(&addr)) == -1)
     {
         sys_error("Error connecting to server");
     }
@@ -36,14 +35,14 @@ int main(int argc, char **argv)
 
     for (int msg_count = args.msg_count; msg_count > 0; msg_count--)
     {
-        if (recv(connection, msg, args.msg_size, 0) == -1)
+        if (recv(sock_fd, msg, args.msg_size, 0) == -1)
         {
             sys_error("Error receiving on client-side");
         }
 
         memset(msg, '#', args.msg_size);
 
-        if (send(connection, msg, args.msg_size, 0) == -1)
+        if (send(sock_fd, msg, args.msg_size, 0) == -1)
         {
             sys_error("Error sending on client-side");
         }
