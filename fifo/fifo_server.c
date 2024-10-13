@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     void *msg_buffer = malloc(args.msg_size);
 
     bench_results results;
-    init_benchmakr(&results);
+    init_benchmark(&results);
 
     wait_for_signal(&sig_action);
 

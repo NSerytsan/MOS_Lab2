@@ -18,7 +18,7 @@
 // Input args routines
 void usage(const char *prog_name)
 {
-    fprintf(stderr, "Usage: <server> <client> -s <message size> -c <message count>\n");
+    fprintf(stderr, "Usage: <name of ipc>_bench -s <message size> -c <message count>\n");
     exit(EXIT_FAILURE);
 }
 
@@ -62,7 +62,7 @@ unsigned long long now()
     return ts.tv_sec * 1e9 + ts.tv_nsec;
 }
 
-void init_benchmakr(bench_results *bench)
+void init_benchmark(bench_results *bench)
 {
     if (bench == NULL)
         return;
@@ -228,17 +228,19 @@ pid_t exec_process(char *path, bench_args *args)
     return pid;
 }
 
-void setup_benchmark_process(int argc, char **argv)
+void exec_server_client(char *server_path, char *client_path, bench_args *args)
 {
-    char *server_path = {argv[1]};
-    char *client_path = {argv[2]};
-    bench_args args;
-    get_bench_args(&args, argc, argv);
     setup_parent_signals();
 
-    pid_t server_pid = exec_process(server_path, &args);
-    pid_t client_pid = exec_process(client_path, &args);
+    pid_t server_pid = exec_process(server_path, args);
+    pid_t client_pid = exec_process(client_path, args);
 
     waitpid(server_pid, NULL, WUNTRACED);
     waitpid(client_pid, NULL, WUNTRACED);
+}
+
+void setup_benchmark_process(int argc, char **argv)
+{
+    
+    
 }

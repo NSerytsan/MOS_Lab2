@@ -53,7 +53,7 @@ void parent_flow(int fds[2], bench_args *args)
     void *msg_buffer = malloc(args->msg_size);
 
     struct bench_results results;
-    init_benchmakr(&results);
+    init_benchmark(&results);
 
     wait_for_signal(&sig_action);
 

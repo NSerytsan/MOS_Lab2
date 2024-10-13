@@ -26,7 +26,7 @@ void get_bench_args(bench_args *args, int argc, char **argv);
 void sys_error(const char *msg);
 
 unsigned long long now();
-void init_benchmakr(bench_results *bench);
+void init_benchmark(bench_results *bench);
 void benchmark(bench_results *bench);
 void evaluate_benchmark(bench_results *bench, bench_args *args);
 
@@ -39,7 +39,6 @@ void notify_client();
 void setup_parent_signals();
 
 void exec_server_client(char *server_path, char *client_path, bench_args *args);
-void setup_benchmark_process(int argc, char **argv);
 
 
 #endif

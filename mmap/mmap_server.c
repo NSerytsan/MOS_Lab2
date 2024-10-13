@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     atomic_char *guard = (atomic_char *)addr;
 
     bench_results results;
-    init_benchmakr(&results);
+    init_benchmark(&results);
 
     while (atomic_load(guard) != 's')
         ;
