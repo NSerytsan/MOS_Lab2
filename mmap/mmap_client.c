@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     }
 
     // Communication with sever
-    void *msg_buffer = malloc(args.msg_size);
+    void *msg = malloc(args.msg_size);
     
     atomic_char *guard = (atomic_char *)addr;
 
@@ -36,13 +36,13 @@ int main(int argc, char **argv)
         while (atomic_load(guard) != 'c')
             ;
 
-        memcpy(msg_buffer, addr, args.msg_size);
+        memcpy(msg, addr, args.msg_size);
         memset(addr, '#', args.msg_size);
 
         atomic_store(guard, 's');
     }
 
-    free(msg_buffer);
+    free(msg);
 
     if (munmap(addr, args.msg_size) < 0)
     {

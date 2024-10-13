@@ -17,7 +17,7 @@ void child_flow(int fds[2], bench_args *args)
 
     struct sigaction sig_action;
     setup_client_signals(&sig_action);
-    void *msg_buffer = malloc(args->msg_size);
+    void *msg = malloc(args->msg_size);
 
     notify_server();
 
@@ -25,7 +25,7 @@ void child_flow(int fds[2], bench_args *args)
     {
         wait_for_signal(&sig_action);
 
-        if (fread(msg_buffer, args->msg_size, 1, fp) == -1)
+        if (fread(msg, args->msg_size, 1, fp) == -1)
         {
             sys_error("Error reading from pipe");
         }
@@ -34,7 +34,7 @@ void child_flow(int fds[2], bench_args *args)
     }
 
     close(fds[1]);
-    free(msg_buffer);
+    free(msg);
 }
 
 void parent_flow(int fds[2], bench_args *args)

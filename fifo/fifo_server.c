@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     }
 
     // Communication with client
-    void *msg_buffer = malloc(args.msg_size);
+    void *msg = malloc(args.msg_size);
 
     bench_results results;
     init_benchmark(&results);
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     for (int msg = 0; msg < args.msg_count; msg++)
     {
         results.iteration_start = now();
-        if (fwrite(msg_buffer, args.msg_size, 1, fp) == 0)
+        if (fwrite(msg, args.msg_size, 1, fp) == 0)
         {
             sys_error("Error writing buffer");
         }
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
     evaluate_benchmark(&results, &args);
 
-    free(msg_buffer);
+    free(msg);
     fclose(fp);
     if (remove(FIFO_BENCH_FILE) == -1)
     {

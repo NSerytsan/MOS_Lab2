@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     }
 
     // Communication with server
-    void *msg_buffer = malloc(args.msg_size);
+    void *msg = malloc(args.msg_size);
 
     notify_server();
 
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     {
         wait_for_signal(&sig_action);
 
-        if (fread(msg_buffer, args.msg_size, 1, fp) == 0)
+        if (fread(msg, args.msg_size, 1, fp) == 0)
         {
             sys_error("Error reading buffer");
         }
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
         notify_server();
     }
 
-    free(msg_buffer);
+    free(msg);
     fclose(fp);
 
     return 0;

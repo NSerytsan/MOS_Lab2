@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     }
 
     // Communication with client
-    void *msg_buffer = malloc(args.msg_size);
+    void *msg = malloc(args.msg_size);
     atomic_char *guard = (atomic_char *)addr;
 
     bench_results results;
@@ -53,13 +53,13 @@ int main(int argc, char **argv)
         while (atomic_load(guard) != 's')
             ;
 
-        memcpy(msg_buffer, addr, args.msg_size);
+        memcpy(msg, addr, args.msg_size);
 
         benchmark(&results);
     }
 
     evaluate_benchmark(&results, &args);
-    free(msg_buffer);
+    free(msg);
 
     if (munmap(addr, args.msg_size) < 0)
     {
