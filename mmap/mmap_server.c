@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 
     while (atomic_load(guard) != 's')
         ;
-    for (int msg = 0; msg < args.msg_count; ++msg)
+    for (int msg_count = 0; msg_count < args.msg_count; ++msg_count)
     {
         results.iteration_start = now();
 

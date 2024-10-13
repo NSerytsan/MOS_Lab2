@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
     wait_for_signal(&sig_action);
 
-    for (int msg = 0; msg < args.msg_count; msg++)
+    for (int msg_count = 0; msg_count < args.msg_count; msg_count++)
     {
         results.iteration_start = now();
         if (fwrite(msg, args.msg_size, 1, fp) == 0)
