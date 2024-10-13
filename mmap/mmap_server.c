@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "common/common.h"
-#include "mmap.h"
+#include "mmap_common.h"
 
 int main(int argc, char **argv)
 {

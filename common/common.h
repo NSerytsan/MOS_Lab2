@@ -1,5 +1,5 @@
-#ifndef BENCH_ARGS_H
-#define BENCH_ARGS_H
+#ifndef COMMON_H
+#define COMMON_H
 
 #include <stddef.h>
 #include <signal.h>

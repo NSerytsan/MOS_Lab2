@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "common/common.h"
-#include "shm.h"
+#include "shm_common.h"
 
 int main(int argc, char **argv)
 {

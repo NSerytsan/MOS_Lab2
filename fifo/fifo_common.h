@@ -1,5 +1,5 @@
-#ifndef FIFO_H
-#define FIFO_H
+#ifndef FIFO_COMMON_H
+#define FIFO_COMMON_H
 
 #define FIFO_BENCH_FILE "/tmp/mos_lab2_bench_fifo"
 #define FIFO_SERVER "./fifo_server"

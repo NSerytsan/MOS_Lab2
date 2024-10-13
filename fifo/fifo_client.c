@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "common/common.h"
-#include "fifo.h"
+#include "fifo_common.h"
 
 int main(int argc, char **argv)
 {

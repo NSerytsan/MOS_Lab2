@@ -1,5 +1,5 @@
-#ifndef UNIX_DOMAIN_H
-#define UNIX_DOMAIN_H
+#ifndef UNIX_DOMAIN_COMMON_H
+#define UNIX_DOMAIN_COMMON_H
 
 #define UNIX_DOMAIN_SERVER "./unix_domain_server"
 #define UNIX_DOMAIN_CLIENT "./unix_domain_client"
