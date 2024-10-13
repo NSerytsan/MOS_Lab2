@@ -10,6 +10,9 @@
 
 #include "common.h"
 
+#define DEFAULT_MSG_COUNT 1000
+#define DEFAULT_MSG_SIZE 4096
+
 #define IGNORE_USR1 0x0
 #define IGNORE_USR2 0x0
 #define BLOCK_USR1 0x1
@@ -28,8 +31,8 @@ void get_bench_args(bench_args *args, int argc, char **argv)
         return;
     int opt = 0;
 
-    args->msg_count = 1000;
-    args->msg_size = 4096;
+    args->msg_count = DEFAULT_MSG_COUNT;
+    args->msg_size = DEFAULT_MSG_SIZE;
     while ((opt = getopt(argc, argv, "c:s:")) != -1)
     {
         switch (opt)
