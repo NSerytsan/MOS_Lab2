@@ -238,9 +238,3 @@ void exec_server_client(char *server_path, char *client_path, bench_args *args)
     waitpid(server_pid, NULL, WUNTRACED);
     waitpid(client_pid, NULL, WUNTRACED);
 }
-
-void setup_benchmark_process(int argc, char **argv)
-{
-    
-    
-}

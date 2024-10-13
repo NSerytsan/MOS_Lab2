@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <signal.h>
 
-typedef struct benc_args
+typedef struct bench_args
 {
     size_t msg_size;
     size_t msg_count;
@@ -39,6 +39,5 @@ void notify_client();
 void setup_parent_signals();
 
 void exec_server_client(char *server_path, char *client_path, bench_args *args);
-
 
 #endif

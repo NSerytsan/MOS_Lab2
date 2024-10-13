@@ -20,7 +20,7 @@ int main(int argc, char **argv)
         sys_error("Error opening stream to FIFO on client-side");
     }
 
-    // Comunication with server
+    // Communication with server
     void *msg_buffer = malloc(args.msg_size);
 
     notify_server();
