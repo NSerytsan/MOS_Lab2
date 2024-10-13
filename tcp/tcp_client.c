@@ -1,4 +1,3 @@
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
@@ -60,6 +59,9 @@ int main(int argc, char **argv)
             sys_error("Error sending data on client-side");
         }
     }
+
+    close(sock_fd);
+    free(msg);
 
     return 0;
 }
