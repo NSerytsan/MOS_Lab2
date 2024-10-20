@@ -10,7 +10,7 @@
 
 #include "common.h"
 
-#define DEFAULT_MSG_COUNT 1000
+#define DEFAULT_MSG_COUNT 1
 #define DEFAULT_MSG_SIZE 4096
 
 #define IGNORE_USR1 0x0
