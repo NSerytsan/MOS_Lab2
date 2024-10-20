@@ -49,18 +49,16 @@ int main(int argc, char **argv)
     {
         bench_rw_results results;
         results.start = now_us();
-        ssize_t recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
-        ssize_t total_recv_bytes = recv_bytes;
-        while (recv_bytes > 0 && total_recv_bytes < args.msg_size)
+        ssize_t total_recv = 0;
+        while (total_recv < args.msg_size)
         {
-            recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
-            if (recv_bytes > 0)
-                total_recv_bytes += recv_bytes;
-        }
+            ssize_t recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
+            if (recv_bytes == -1)
+            {
+                sys_error("Error receiving data on client-side");
+            }
 
-        if (recv_bytes == -1)
-        {
-            sys_error("Error receiving data on client-side");
+            total_recv += recv_bytes;
         }
         results.end = now_us();
         FILE *fp = fopen(TCP_CLIENT_OUT, "w");
@@ -71,18 +69,16 @@ int main(int argc, char **argv)
     {
         for (int msg_count = args.msg_count; msg_count > 0; msg_count--)
         {
-            ssize_t recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
-            ssize_t total_recv_bytes = recv_bytes;
-            while (recv_bytes > 0 && total_recv_bytes < args.msg_size)
+            ssize_t total_recv = 0;
+            while (total_recv < args.msg_size)
             {
-                recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
-                if (recv_bytes > 0)
-                    total_recv_bytes += recv_bytes;
-            }
+                ssize_t recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
+                if (recv_bytes == -1)
+                {
+                    sys_error("Error receiving data on client-side");
+                }
 
-            if (recv_bytes == -1)
-            {
-                sys_error("Error receiving data on client-side");
+                total_recv += recv_bytes;
             }
 
             memset(msg, '#', args.msg_size);

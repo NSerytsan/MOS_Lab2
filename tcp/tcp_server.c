@@ -67,6 +67,7 @@ int main(int argc, char **argv)
     {
         bench_rw_results results;
         results.start = now_us();
+
         if (send(conn_fd, msg, args.msg_size, 0) == -1)
         {
             sys_error("Error sending to server");
@@ -89,9 +90,16 @@ int main(int argc, char **argv)
                 sys_error("Error sending to server");
             }
 
-            if (recv(conn_fd, msg, args.msg_size, 0) == -1)
+            ssize_t total_recv = 0;
+            while (total_recv < args.msg_size)
             {
-                sys_error("Error receiving from server");
+                ssize_t recv_bytes = recv(conn_fd, msg, args.msg_size, 0);
+                if (recv_bytes == -1)
+                {
+                    sys_error("Error receiving data on client-side");
+                }
+
+                total_recv += recv_bytes;
             }
 
             benchmark(&results);
