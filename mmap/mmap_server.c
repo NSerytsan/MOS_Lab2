@@ -58,7 +58,7 @@ int main(int argc, char **argv)
         benchmark(&results);
     }
 
-    evaluate_benchmark(&results, &args);
+    evaluate_benchmark(&results, &args, NULL);
     free(msg);
 
     if (munmap(addr, args.msg_size) < 0)

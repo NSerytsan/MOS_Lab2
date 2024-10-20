@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <stddef.h>
+#include <stdio.h>
 #include <signal.h>
 
 typedef struct bench_args
@@ -21,14 +21,23 @@ typedef struct bench_results
     unsigned long long squared_sum;
 } bench_results;
 
+typedef struct bench_rw_results
+{
+    double start;
+    double end;
+
+} bench_rw_results;
+
 void get_bench_args(bench_args *args, int argc, char **argv);
 
 void sys_error(const char *msg);
 
 unsigned long long now();
+double now_us();
 void init_benchmark(bench_results *bench);
 void benchmark(bench_results *bench);
-void evaluate_benchmark(bench_results *bench, bench_args *args);
+void evaluate_benchmark(bench_results *bench, bench_args *args, FILE *fp);
+void evaluate_rw_benchmark(bench_rw_results *bench, bench_args *args, FILE *fp);
 
 void setup_signals(struct sigaction *signal_action, int flags);
 void setup_client_signals(struct sigaction *signal_action);

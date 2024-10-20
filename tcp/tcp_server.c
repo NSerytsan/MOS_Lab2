@@ -81,7 +81,7 @@ int main(int argc, char **argv)
         benchmark(&results);
     }
 
-    evaluate_benchmark(&results, &args);
+    evaluate_benchmark(&results, &args, NULL);
 
     close(sock_fd);
     close(conn_fd);

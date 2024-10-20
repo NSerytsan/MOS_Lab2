@@ -52,7 +52,7 @@ int main(int argc, char **argv)
         benchmark(&results);
     }
 
-    evaluate_benchmark(&results, &args);
+    evaluate_benchmark(&results, &args, NULL);
 
     free(msg);
     fclose(fp);

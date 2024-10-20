@@ -29,14 +29,32 @@ int main(int argc, char **argv)
     atomic_init(guard, 's');
     char *msg_shared_mem = shared_mem + 1;
 
-    for (int msg_count = args.msg_count; msg_count > 0; msg_count--)
+    if (args.msg_count == 0)
     {
+        bench_rw_results results;
         while (atomic_load(guard) != 'c')
             ;
+        results.start = now_us();
         memcpy(msg, msg_shared_mem, args.msg_size);
-        memset(msg_shared_mem, '#', args.msg_size);
+        results.end = now_us();
+        FILE *fp = NULL;
+        fp = fopen(SHM_CLIENT_OUT, "w");
+        evaluate_rw_benchmark(&results, &args, fp);
+        fclose(fp);
+    }
+    else
+    {
 
-        atomic_store(guard, 's');
+        for (int msg_count = args.msg_count; msg_count > 0; msg_count--)
+        {
+            while (atomic_load(guard) != 'c')
+                ;
+
+            memcpy(msg, msg_shared_mem, args.msg_size);
+            memset(msg_shared_mem, '#', args.msg_size);
+
+            atomic_store(guard, 's');
+        }
     }
 
     free(msg);

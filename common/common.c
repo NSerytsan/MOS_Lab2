@@ -10,7 +10,7 @@
 
 #include "common.h"
 
-#define DEFAULT_MSG_COUNT 1
+#define DEFAULT_MSG_COUNT 0
 #define DEFAULT_MSG_SIZE 4096
 
 #define IGNORE_USR1 0x0
@@ -65,6 +65,13 @@ unsigned long long now()
     return ts.tv_sec * 1e9 + ts.tv_nsec;
 }
 
+double now_us()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (double)(tv.tv_sec) * 1000000.0 + (double)(tv.tv_usec);
+}
+
 void init_benchmark(bench_results *bench)
 {
     if (bench == NULL)
@@ -93,24 +100,41 @@ void benchmark(bench_results *bench)
     bench->squared_sum += (time * time);
 }
 
-void evaluate_benchmark(bench_results *bench, bench_args *args)
+void evaluate_benchmark(bench_results *bench, bench_args *args, FILE *fp)
 {
-    const unsigned long total_time = now() - bench->total_start;
-    const double average = ((double)bench->sum) / args->msg_count;
+    if (fp == NULL)
+        fp = stdout;
 
-    double sigma = bench->squared_sum / args->msg_count;
+    size_t msg_count = (args->msg_count == 0) ? 1 : args->msg_count;
+    const unsigned long total_time = now() - bench->total_start;
+    const double average = ((double)bench->sum) / msg_count;
+
+    double sigma = bench->squared_sum / msg_count;
     sigma = sqrt(sigma - (average * average));
 
-    int message_rate = (int)(args->msg_count / (total_time / 1e9));
+    int message_rate = (int)(msg_count / (total_time / 1e9));
 
-    printf("\nMessage size:       %lu\n", args->msg_size);
-    printf("Message count:      %lu\n", args->msg_count);
-    printf("Total duration:     %.3f\tms\n", total_time / 1e6);
-    printf("Average duration:   %.3f\tus\n", average / 1000.0);
-    printf("Minimum duration:   %.3f\tus\n", bench->min_time / 1000.0);
-    printf("Maximum duration:   %.3f\tus\n", bench->max_time / 1000.0);
-    printf("Standard deviation: %.3f\tus\n", sigma / 1000.0);
-    printf("Message rate:       %d\tmsg/s\n", message_rate);
+    fprintf(fp, "\nMessage size:       %lu\n", args->msg_size);
+    fprintf(fp, "Message count:      %lu\n", msg_count);
+    fprintf(fp, "Total duration:     %.3f\tms\n", total_time / 1e6);
+    fprintf(fp, "Average duration:   %.3f\tus\n", average / 1000.0);
+    fprintf(fp, "Minimum duration:   %.3f\tus\n", bench->min_time / 1000.0);
+    fprintf(fp, "Maximum duration:   %.3f\tus\n", bench->max_time / 1000.0);
+    fprintf(fp, "Standard deviation: %.3f\tus\n", sigma / 1000.0);
+    fprintf(fp, "Message rate:       %d\tmsg/s\n", message_rate);
+}
+
+void evaluate_rw_benchmark(bench_rw_results *bench, bench_args *args, FILE *fp)
+{
+    if (fp == NULL)
+    {
+        fp = stdout;
+    }
+    const double latency = (bench->end - bench->start) / 1000;
+    const double throughput = (args->msg_size / (1024.0 * 1024.0)) / ((bench->end - bench->start) / 1000000.0);
+    fprintf(fp, "\nMessage size:       %lu\n", args->msg_size);
+    fprintf(fp, "Latency:     %.3f\tms\n", latency);
+    fprintf(fp, "Throughput:   %.3f\tmb/s\n", throughput);
 }
 
 // Signals routines

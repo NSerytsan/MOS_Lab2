@@ -44,7 +44,7 @@ void parent_flow(int fds[2], bench_args *args)
     FILE *fp = fdopen(fds[1], "w");
     if (fp == NULL)
     {
-        sys_error("Couldn't open stream for writting");
+        sys_error("Couldn't open stream for writing");
     }
 
     struct sigaction sig_action;
@@ -73,7 +73,7 @@ void parent_flow(int fds[2], bench_args *args)
         benchmark(&results);
     }
 
-    evaluate_benchmark(&results, args);
+    evaluate_benchmark(&results, args, NULL);
 
     close(fds[1]);
     free(msg_buffer);

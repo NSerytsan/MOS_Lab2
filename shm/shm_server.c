@@ -31,25 +31,38 @@ int main(int argc, char **argv)
     while (atomic_load(guard) != 's') // Waiting the notification from client
         ;
 
-    bench_results results;
-    init_benchmark(&results);
-
-    for (int msg_count = 0; msg_count < args.msg_count; msg_count++)
+    if (args.msg_count == 0)
     {
-        results.iteration_start = now();
-
-        memset(shared_mem + 1, '#', args.msg_size); // Write the message into shared memory
-
-        atomic_store(guard, 'c');         // Notifying the client that the message can be read from shared memory
-        while (atomic_load(guard) != 's') // Waiting the notification from client
-            ;
-
-        memcpy(msg, shared_mem + 1, args.msg_size); // Read message from shared memory
-
-        benchmark(&results);
+        bench_rw_results results;
+        results.start = now_us();
+        memset(shared_mem + 1, '#', args.msg_size);
+        results.end = now_us();
+        atomic_store(guard, 'c');
+        FILE *fp = fopen(SHM_SERVER_OUT, "w");
+        evaluate_rw_benchmark(&results, &args, fp);
+        fclose(fp);
     }
+    else
+    {
+        bench_results results;
+        init_benchmark(&results);
+        for (int msg_count = 0; msg_count < args.msg_count; msg_count++)
+        {
+            results.iteration_start = now();
 
-    evaluate_benchmark(&results, &args);
+            memset(shared_mem + 1, '#', args.msg_size); // Write the message into shared memory
+
+            atomic_store(guard, 'c');         // Notifying the client that the message can be read from shared memory
+            while (atomic_load(guard) != 's') // Waiting the notification from client
+                ;
+
+            memcpy(msg, shared_mem + 1, args.msg_size); // Read message from shared memory
+
+            benchmark(&results);
+        }
+
+        evaluate_benchmark(&results, &args, NULL);
+    }
 
     free(msg);
     shmdt(shared_mem);
