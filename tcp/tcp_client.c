@@ -50,9 +50,12 @@ int main(int argc, char **argv)
         bench_rw_results results;
         results.start = now_us();
         ssize_t recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
-        while (recv_bytes > 0 && recv_bytes < args.msg_size)
+        ssize_t total_recv_bytes = recv_bytes;
+        while (recv_bytes > 0 && total_recv_bytes < args.msg_size)
         {
             recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
+            if (recv_bytes > 0)
+                total_recv_bytes += recv_bytes;
         }
 
         if (recv_bytes == -1)
@@ -68,7 +71,16 @@ int main(int argc, char **argv)
     {
         for (int msg_count = args.msg_count; msg_count > 0; msg_count--)
         {
-            if (recv(sock_fd, msg, args.msg_size, 0) == -1)
+            ssize_t recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
+            ssize_t total_recv_bytes = recv_bytes;
+            while (recv_bytes > 0 && total_recv_bytes < args.msg_size)
+            {
+                recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
+                if (recv_bytes > 0)
+                    total_recv_bytes += recv_bytes;
+            }
+
+            if (recv_bytes == -1)
             {
                 sys_error("Error receiving data on client-side");
             }
