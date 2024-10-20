@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -22,33 +23,40 @@ int main(int argc, char **argv)
 
     notify_client();
 
-    FILE *fp = fopen(FIFO_BENCH_FILE, "w");
-    if (fp == NULL)
+    int fd = open(FIFO_BENCH_FILE, O_WRONLY);
+    if (fd == -1)
     {
         sys_error("Error opening FIFO");
     }
 
-    // Communication with client
     void *msg = malloc(args.msg_size);
 
     wait_for_signal(&sig_action);
 
+    const int fifo_sz = fcntl(fd, F_GETPIPE_SZ);
+
     if (args.msg_count == 0)
     {
         bench_rw_results results;
+        notify_client();
         results.start = now_us();
-        if (fwrite(msg, args.msg_size, 1, fp) == 0)
+        ssize_t total_write = 0;
+
+        while (total_write < args.msg_size)
         {
-            sys_error("Error writing buffer");
+            ssize_t write_bytes = write(fd, msg, (args.msg_size - total_write > fifo_sz) ? fifo_sz : args.msg_size - total_write);
+
+            if (write_bytes == -1)
+            {
+                sys_error("Error writing buffer");
+            }
+            total_write += write_bytes;
         }
 
-        fflush(fp);
         results.end = now_us();
         FILE *fp = fopen(FIFO_SERVER_OUT, "w");
         evaluate_rw_benchmark(&results, &args, fp);
         fclose(fp);
-
-        notify_client();
     }
     else
     {
@@ -58,14 +66,19 @@ int main(int argc, char **argv)
         for (int msg_count = 0; msg_count < args.msg_count; msg_count++)
         {
             results.iteration_start = now();
-            if (fwrite(msg, args.msg_size, 1, fp) == 0)
+            notify_client();
+            ssize_t total_write = 0;
+            while (total_write < args.msg_size)
             {
-                sys_error("Error writing buffer");
+                ssize_t write_bytes = write(fd, msg, (args.msg_size - total_write > fifo_sz) ? fifo_sz : args.msg_size - total_write);
+
+                if (write_bytes == -1)
+                {
+                    sys_error("Error writing buffer");
+                }
+                total_write += write_bytes;
             }
 
-            fflush(fp);
-
-            notify_client();
             wait_for_signal(&sig_action);
 
             benchmark(&results);
@@ -74,7 +87,8 @@ int main(int argc, char **argv)
     }
 
     free(msg);
-    fclose(fp);
+    close(fd);
+
     if (remove(FIFO_BENCH_FILE) == -1)
     {
         sys_error("Error removing FIFO");

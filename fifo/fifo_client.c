@@ -1,3 +1,5 @@
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -14,26 +16,35 @@ int main(int argc, char **argv)
 
     wait_for_signal(&sig_action);
 
-    FILE *fp = fopen(FIFO_BENCH_FILE, "r");
-    if (fp == NULL)
+    int fd = open(FIFO_BENCH_FILE, O_RDONLY);
+    if (fd == -1)
     {
-        sys_error("Error opening stream to FIFO on client-side");
+        sys_error("Error opening file to FIFO on client-side");
     }
 
-    // Communication with server
     void *msg = malloc(args.msg_size);
 
     notify_server();
+    const int fifo_sz = fcntl(fd, F_GETPIPE_SZ);
 
     if (args.msg_count == 0)
     {
         wait_for_signal(&sig_action);
         bench_rw_results results;
         results.start = now_us();
-        if (fread(msg, args.msg_size, 1, fp) == 0)
+        ssize_t total_read = 0;
+        while (total_read < args.msg_size)
         {
-            sys_error("Error reading buffer");
+            ssize_t read_bytes = read(fd, msg, fifo_sz);
+
+            if (read_bytes == -1)
+            {
+                sys_error("Error reading buffer");
+            }
+
+            total_read += read_bytes;
         }
+
         results.end = now_us();
         FILE *fp = fopen(FIFO_CLIENT_OUT, "w");
         evaluate_rw_benchmark(&results, &args, fp);
@@ -45,9 +56,17 @@ int main(int argc, char **argv)
         {
             wait_for_signal(&sig_action);
 
-            if (fread(msg, args.msg_size, 1, fp) == 0)
+            ssize_t total_read = 0;
+            while (total_read < args.msg_size)
             {
-                sys_error("Error reading buffer");
+                ssize_t read_bytes = read(fd, msg, fifo_sz);
+
+                if (read_bytes == -1)
+                {
+                    sys_error("Error reading buffer");
+                }
+
+                total_read += read_bytes;
             }
 
             notify_server();
@@ -55,7 +74,7 @@ int main(int argc, char **argv)
     }
 
     free(msg);
-    fclose(fp);
+    close(fd);
 
     return 0;
 }
