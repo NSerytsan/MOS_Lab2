@@ -43,22 +43,38 @@ int main(int argc, char **argv)
 
     while (atomic_load(guard) != 's')
         ;
-    for (int msg_count = 0; msg_count < args.msg_count; ++msg_count)
+
+    if (args.msg_count == 0)
     {
-        results.iteration_start = now();
-
+        bench_rw_results results;
+        results.start = now_us();
         memset(addr, '#', args.msg_size);
-
+        results.end = now_us();
         atomic_store(guard, 'c');
-        while (atomic_load(guard) != 's')
-            ;
+        FILE *fp = fopen(MMAP_SERVER_OUT, "w");
+        evaluate_rw_benchmark(&results, &args, fp);
+        fclose(fp);
+    }
+    else
+    {
+        for (int msg_count = 0; msg_count < args.msg_count; ++msg_count)
+        {
+            results.iteration_start = now();
 
-        memcpy(msg, addr, args.msg_size);
+            memset(addr, '#', args.msg_size);
 
-        benchmark(&results);
+            atomic_store(guard, 'c');
+            while (atomic_load(guard) != 's')
+                ;
+
+            memcpy(msg, addr, args.msg_size);
+
+            benchmark(&results);
+        }
+
+        evaluate_benchmark(&results, &args, NULL);
     }
 
-    evaluate_benchmark(&results, &args, NULL);
     free(msg);
 
     if (munmap(addr, args.msg_size) < 0)

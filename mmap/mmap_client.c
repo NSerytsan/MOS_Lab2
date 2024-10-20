@@ -27,19 +27,35 @@ int main(int argc, char **argv)
 
     // Communication with sever
     void *msg = malloc(args.msg_size);
-    
+
     atomic_char *guard = (atomic_char *)addr;
 
     atomic_store(guard, 's');
-    for (; args.msg_count > 0; --args.msg_count)
+
+    if (args.msg_count == 0)
     {
+        bench_rw_results results;
         while (atomic_load(guard) != 'c')
             ;
-
+        results.start = now_us();
         memcpy(msg, addr, args.msg_size);
-        memset(addr, '#', args.msg_size);
+        results.end = now_us();
+        FILE *fp = fopen(MMAP_CLIENT_OUT, "w");
+        evaluate_rw_benchmark(&results, &args, fp);
+        fclose(fp);
+    }
+    else
+    {
+        for (; args.msg_count > 0; --args.msg_count)
+        {
+            while (atomic_load(guard) != 'c')
+                ;
 
-        atomic_store(guard, 's');
+            memcpy(msg, addr, args.msg_size);
+            memset(addr, '#', args.msg_size);
+
+            atomic_store(guard, 's');
+        }
     }
 
     free(msg);

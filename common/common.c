@@ -11,7 +11,7 @@
 #include "common.h"
 
 #define DEFAULT_MSG_COUNT 0
-#define DEFAULT_MSG_SIZE 4096
+#define DEFAULT_MSG_SIZE 1024*1024
 
 #define IGNORE_USR1 0x0
 #define IGNORE_USR2 0x0
