@@ -31,28 +31,47 @@ int main(int argc, char **argv)
     // Communication with client
     void *msg = malloc(args.msg_size);
 
-    bench_results results;
-    init_benchmark(&results);
-
     wait_for_signal(&sig_action);
 
-    for (int msg_count = 0; msg_count < args.msg_count; msg_count++)
+    if (args.msg_count == 0)
     {
-        results.iteration_start = now();
+        bench_rw_results results;
+        results.start = now_us();
         if (fwrite(msg, args.msg_size, 1, fp) == 0)
         {
             sys_error("Error writing buffer");
         }
 
         fflush(fp);
+        results.end = now_us();
+        FILE *fp = fopen(FIFO_SERVER_OUT, "w");
+        evaluate_rw_benchmark(&results, &args, fp);
+        fclose(fp);
 
         notify_client();
-        wait_for_signal(&sig_action);
-
-        benchmark(&results);
     }
+    else
+    {
+        bench_results results;
+        init_benchmark(&results);
 
-    evaluate_benchmark(&results, &args, NULL);
+        for (int msg_count = 0; msg_count < args.msg_count; msg_count++)
+        {
+            results.iteration_start = now();
+            if (fwrite(msg, args.msg_size, 1, fp) == 0)
+            {
+                sys_error("Error writing buffer");
+            }
+
+            fflush(fp);
+
+            notify_client();
+            wait_for_signal(&sig_action);
+
+            benchmark(&results);
+        }
+        evaluate_benchmark(&results, &args, NULL);
+    }
 
     free(msg);
     fclose(fp);

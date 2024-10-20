@@ -25,16 +25,33 @@ int main(int argc, char **argv)
 
     notify_server();
 
-    for (; args.msg_count > 0; args.msg_count--)
+    if (args.msg_count == 0)
     {
         wait_for_signal(&sig_action);
-
+        bench_rw_results results;
+        results.start = now_us();
         if (fread(msg, args.msg_size, 1, fp) == 0)
         {
             sys_error("Error reading buffer");
         }
+        results.end = now_us();
+        FILE *fp = fopen(FIFO_CLIENT_OUT, "w");
+        evaluate_rw_benchmark(&results, &args, fp);
+        fclose(fp);
+    }
+    else
+    {
+        for (; args.msg_count > 0; args.msg_count--)
+        {
+            wait_for_signal(&sig_action);
 
-        notify_server();
+            if (fread(msg, args.msg_size, 1, fp) == 0)
+            {
+                sys_error("Error reading buffer");
+            }
+
+            notify_server();
+        }
     }
 
     free(msg);

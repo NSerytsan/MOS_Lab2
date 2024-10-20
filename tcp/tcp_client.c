@@ -45,18 +45,40 @@ int main(int argc, char **argv)
 
     void *msg = malloc(args.msg_size);
 
-    for (int msg_count = args.msg_count; msg_count > 0; msg_count--)
+    if (args.msg_count == 0)
     {
-        if (recv(sock_fd, msg, args.msg_size, 0) == -1)
+        bench_rw_results results;
+        results.start = now_us();
+        ssize_t recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
+        while (recv_bytes > 0 && recv_bytes < args.msg_size)
+        {
+            recv_bytes = recv(sock_fd, msg, args.msg_size, 0);
+        }
+
+        if (recv_bytes == -1)
         {
             sys_error("Error receiving data on client-side");
         }
-
-        memset(msg, '#', args.msg_size);
-
-        if (send(sock_fd, msg, args.msg_size, 0) == -1)
+        results.end = now_us();
+        FILE *fp = fopen(TCP_CLIENT_OUT, "w");
+        evaluate_rw_benchmark(&results, &args, fp);
+        fclose(fp);
+    }
+    else
+    {
+        for (int msg_count = args.msg_count; msg_count > 0; msg_count--)
         {
-            sys_error("Error sending data on client-side");
+            if (recv(sock_fd, msg, args.msg_size, 0) == -1)
+            {
+                sys_error("Error receiving data on client-side");
+            }
+
+            memset(msg, '#', args.msg_size);
+
+            if (send(sock_fd, msg, args.msg_size, 0) == -1)
+            {
+                sys_error("Error sending data on client-side");
+            }
         }
     }
 

@@ -62,26 +62,43 @@ int main(int argc, char **argv)
     }
 
     void *msg = malloc(args.msg_size);
-    bench_results results;
-    init_benchmark(&results);
-    for (int msg_count = 0; msg_count < args.msg_count; msg_count++)
-    {
-        results.iteration_start = now();
 
+    if (args.msg_count == 0)
+    {
+        bench_rw_results results;
+        results.start = now_us();
         if (send(conn_fd, msg, args.msg_size, 0) == -1)
         {
             sys_error("Error sending to server");
         }
-
-        if (recv(conn_fd, msg, args.msg_size, 0) == -1)
+        results.end = now_us();
+        FILE *fp = fopen(TCP_SERVER_OUT, "w");
+        evaluate_rw_benchmark(&results, &args, fp);
+        fclose(fp);
+    }
+    else
+    {
+        bench_results results;
+        init_benchmark(&results);
+        for (int msg_count = 0; msg_count < args.msg_count; msg_count++)
         {
-            sys_error("Error receiving from server");
+            results.iteration_start = now();
+
+            if (send(conn_fd, msg, args.msg_size, 0) == -1)
+            {
+                sys_error("Error sending to server");
+            }
+
+            if (recv(conn_fd, msg, args.msg_size, 0) == -1)
+            {
+                sys_error("Error receiving from server");
+            }
+
+            benchmark(&results);
         }
 
-        benchmark(&results);
+        evaluate_benchmark(&results, &args, NULL);
     }
-
-    evaluate_benchmark(&results, &args, NULL);
 
     close(sock_fd);
     close(conn_fd);
