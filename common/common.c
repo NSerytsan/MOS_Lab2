@@ -132,9 +132,9 @@ void evaluate_rw_benchmark(bench_rw_results *bench, bench_args *args, FILE *fp)
     }
     const double latency = (bench->end - bench->start) / 1000;
     const double throughput = (args->msg_size / (1024.0 * 1024.0)) / ((bench->end - bench->start) / 1000000.0);
-    fprintf(fp, "\nMessage size:       %lu\n", args->msg_size);
-    fprintf(fp, "Latency:     %.3f\tms\n", latency);
-    fprintf(fp, "Throughput:   %.3f\tmb/s\n", throughput);
+    fprintf(fp, "\nMessage size:  %lu\n", args->msg_size);
+    fprintf(fp, "Latency:       %.3f\tms\n", latency);
+    fprintf(fp, "Throughput:    %.3f\tMB/s\n", throughput);
 }
 
 // Signals routines
