@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     bench_args args;
     get_bench_args(&args, argc, argv);
 
-    int fd = open(MMAP_BENCH_FILE, O_RDWR | O_CREAT, 0666);
+    int fd = shm_open(MMAP_BENCH_FILE, O_RDWR | O_CREAT, 0666);
     if (fd < 0)
     {
         sys_error("Error opening file");
